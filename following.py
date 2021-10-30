@@ -4,6 +4,7 @@ import tweepy
 import json
 import time
 import sys
+import numpy as np
 
 def save_cred(filename="my_creds.json"):
     """
@@ -75,10 +76,8 @@ def get_following(api):
     friends = api.get_friend_ids()
     print(" This account follows: {} accounts".format((len(friends))))
 
-    following = [user for user in api.lookup_users(friends)]
-
     batch_len = 100
-    num_batches = len(friends) / 100
+    num_batches = np.ceil(len(friends) / 100)
     batches = (friends[i:i + batch_len] for i in range(0, len(friends), batch_len))
     all_data = []
     for batch_count, batch in enumerate(batches):
@@ -86,7 +85,7 @@ def get_following(api):
         sys.stdout.flush()
         sys.stdout.write("Fetching batch: " + str(batch_count) + "/" + str(num_batches))
         sys.stdout.flush()
-        users_list = api.lookup_users(user_ids=batch)
+        users_list = api.lookup_users(user_id=batch)
         users_json = (map(lambda t: t._json, users_list))
         all_data += users_json
 
@@ -94,7 +93,7 @@ def get_following(api):
     # Save the credentials object to file
     with open((os.path.join(os.getcwd(), "following.json")), "w") as file:
         json.dump(all_data, file)
-    return following
+    return all_data
 
 
 if __name__ == "__main__":
