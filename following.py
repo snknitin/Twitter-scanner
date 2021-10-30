@@ -1,3 +1,4 @@
+import collections
 import os
 import tweepy
 import json
@@ -68,19 +69,18 @@ def get_following(api):
     :param api:
     :return:
     """
-    following_list = []
-    # Print out each one
-    for follower in limit_handled(tweepy.Cursor(api.get_friends,count=200).items()):
-    #for follower in api.get_friends(count=200):
-        # Running this snippet will print all users you follow that themselves follow less than 300 people total
-        # - to exclude obvious spambots, for example
-        # if follower.friends_count < 600:
-        #     print(follower.screen_name)
-        following_list.append(follower)
+    following = collections.defaultdict()
+
+    # getting the friends list
+    friends = api.get_friend_ids()
+    print(" This account follows: {} accounts".format((len(friends))))
+
+    for id in friends:
+        following[id] = api.get_user(id)
     # Save the credentials object to file
-    with open((os.path.join(os.getcwd(), "followers.json")), "w") as file:
-        json.dump(following_list, file)
-    return following_list
+    with open((os.path.join(os.getcwd(), "following.json")), "w") as file:
+        json.dump(following, file)
+    return following
 
 
 if __name__ == "__main__":
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     # Get all the people the user follows using
     # the screen_name of the targeted user
     screen_name = "Nitin_wysiwyg"
-    following_list = get_following(api)
+    following = get_following(api)
